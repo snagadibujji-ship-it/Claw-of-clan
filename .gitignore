@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+build/
+dist/
+eggs/
+pip-wheel-metadata/
+.mypy_cache/
+.pyre/
+.ruff_cache/
+.tox/
+.nox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# VulnClaw runtime
+.vulnclaw/
+.workbuddy/
+.trae/
+sessions/
+reports/
+pocs/
+
+# Test / coverage
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Temp / local files
+*.tmp
+*.bak
+*.log
+_test_output*.txt
+_test_report_raw.txt
+
+# Frontend build / deps
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.npm-cache/
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.cjs
+frontend/vite.config.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# AI tooling (local)
+.claude/
+CLAUDE.md
+
+# Local docs / local-only artifacts
+docs/
+.test-tmp/
+版本号文件.png

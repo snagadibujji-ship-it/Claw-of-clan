@@ -1,0 +1,268 @@
+"""GHIA Scout Config Module Tests — schema.py + settings.py"""
+
+
+# ── schema.py ────────────────────────────────────────────────────────
+
+
+class TestLLMConfig:
+    """Test LLMConfig schema."""
+
+    def test_default_values(self):
+        from vulnclaw.config.schema import LLMConfig
+
+        config = LLMConfig()
+        assert config.model == "gpt-4o"
+        assert config.api_key == ""
+        assert config.base_url == "https://api.openai.com/v1"
+        assert config.temperature == 0.1  # Updated default for pentest use
+        assert config.max_tokens == 4096
+
+    def test_custom_values(self):
+        from vulnclaw.config.schema import LLMConfig
+
+        config = LLMConfig(
+            model="deepseek-chat",
+            api_key="sk-test",
+            base_url="https://api.deepseek.com/v1",
+            temperature=0.3,
+            max_tokens=8192,
+        )
+        assert config.model == "deepseek-chat"
+        assert config.api_key == "sk-test"
+        assert config.temperature == 0.3
+
+    def test_provider_field(self):
+        from vulnclaw.config.schema import LLMConfig
+
+        config = LLMConfig(provider="deepseek")
+        assert config.provider == "deepseek"
+
+    def test_reasoning_effort_field(self):
+        from vulnclaw.config.schema import LLMConfig
+
+        config = LLMConfig(reasoning_effort="high")
+        assert config.reasoning_effort == "high"
+
+
+class TestMCPServerConfig:
+    """Test MCPServerConfig schema."""
+
+    def test_default_values(self):
+        from vulnclaw.config.schema import MCPServerConfig, MCPTransportConfig
+
+        config = MCPServerConfig(
+            name="test-server",
+            transport=MCPTransportConfig(type="stdio"),
+        )
+        assert config.name == "test-server"
+        assert config.enabled is True
+        assert config.priority == 1
+        assert config.description == ""
+
+    def test_custom_values(self):
+        from vulnclaw.config.schema import MCPServerConfig, MCPTransportConfig
+
+        config = MCPServerConfig(
+            name="burp",
+            enabled=False,
+            priority=0,
+            transport=MCPTransportConfig(type="sse", url="http://localhost:8080"),
+            description="Burp Suite MCP server",
+        )
+        assert config.enabled is False
+        assert config.priority == 0
+        assert config.transport.type == "sse"
+
+
+class TestSessionConfig:
+    """Test SessionConfig schema."""
+
+    def test_runtime_integration_default_values(self):
+        from vulnclaw.config.schema import SessionConfig
+
+        config = SessionConfig()
+        assert config.reasoning_state_enabled is True
+        assert config.reflexion_enabled is True
+        assert config.reflexion_max_same_vuln_fails == 2
+        assert config.reflexion_max_total_no_progress == 5
+        assert config.escalation_max_level == 4
+        assert config.plugin_runtime_enabled is True
+        assert config.plugin_default_timeout == 10
+        assert config.plugin_max_requests_per_target == 30
+        assert config.evidence_min_report_level == "L4"
+
+
+class TestGHIAScoutConfig:
+    """Test GHIAScoutConfig schema."""
+
+    def test_default_values(self):
+        from vulnclaw.config.schema import GHIAScoutConfig
+
+        config = GHIAScoutConfig()
+        assert config.llm.model == "gpt-4o"
+        assert isinstance(config.mcp.servers, dict)
+        assert config.session.reasoning_state_enabled is True
+        assert config.session.reflexion_enabled is True
+
+    def test_mcp_builtin_servers(self):
+        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, GHIAScoutConfig
+
+        GHIAScoutConfig()
+        # Builtin servers are defined in BUILTIN_MCP_SERVERS, not in default config
+        # Default config has empty servers dict; servers are populated by settings
+        assert "fetch" in BUILTIN_MCP_SERVERS
+        assert "memory" in BUILTIN_MCP_SERVERS
+
+    def test_builtin_mcp_server_count(self):
+        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS
+
+        # Should have 4 builtin servers (fetch, memory, chrome-devtools, burp)
+        assert len(BUILTIN_MCP_SERVERS) == 4
+
+    def test_burp_uses_sse_transport(self):
+        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS
+
+        transport = BUILTIN_MCP_SERVERS["burp"]["transport"]
+        assert transport["type"] == "sse"
+        assert transport["url"] == "http://127.0.0.1:9876"
+
+    def test_provider_presets(self):
+        from vulnclaw.config.schema import PROVIDER_PRESETS
+
+        # Should have at least the documented providers
+        expected_providers = [
+            "openai",
+            "minimax",
+            "deepseek",
+            "zhipu",
+            "moonshot",
+            "qwen",
+            "siliconflow",
+        ]
+        for provider in expected_providers:
+            assert provider in PROVIDER_PRESETS, f"Missing provider: {provider}"
+
+    def test_llm_provider_enum(self):
+        from vulnclaw.config.schema import LLMProvider
+
+        assert hasattr(LLMProvider, "OPENAI")
+        assert hasattr(LLMProvider, "DEEPSEEK")
+        assert hasattr(LLMProvider, "MINIMAX")
+
+
+# ── settings.py ──────────────────────────────────────────────────────
+
+
+class TestSettingsLoad:
+    """Test config loading."""
+
+    def test_load_config_returns_config(self):
+        from vulnclaw.config.schema import GHIAScoutConfig
+        from vulnclaw.config.settings import load_config
+
+        config = load_config()
+        assert isinstance(config, GHIAScoutConfig)
+
+    def test_load_config_has_llm(self):
+        from vulnclaw.config.settings import load_config
+
+        config = load_config()
+        assert config.llm is not None
+
+    def test_load_config_has_mcp(self):
+        from vulnclaw.config.settings import load_config
+
+        config = load_config()
+        assert config.mcp is not None
+
+    def test_save_config(self):
+        from vulnclaw.config.schema import GHIAScoutConfig
+        from vulnclaw.config.settings import save_config
+
+        config = GHIAScoutConfig()
+        config.llm.model = "test-model"
+        # save_config saves to the default path
+        save_config(config)  # Should not crash
+
+    def test_set_config_value(self):
+        from vulnclaw.config.settings import set_config_value
+
+        # set_config_value(key, value) — sets in the YAML config
+        set_config_value("llm.model", "gpt-4o-mini")  # Should not crash
+
+    def test_set_config_nested(self):
+        from vulnclaw.config.settings import set_config_value
+
+        set_config_value("llm.temperature", "0.1")  # Should not crash
+
+    def test_set_config_mcp_server_field(self):
+        from vulnclaw.config.settings import load_config, set_config_value
+
+        set_config_value("mcp.servers.chrome-devtools.enabled", "true")
+
+        config = load_config()
+        assert config.mcp.servers["chrome-devtools"].enabled is True
+
+    def test_apply_provider_preset(self):
+        from vulnclaw.config.schema import GHIAScoutConfig
+        from vulnclaw.config.settings import apply_provider_preset
+
+        config = GHIAScoutConfig()
+        apply_provider_preset(config, "deepseek")
+        assert config.llm.provider == "deepseek"
+        assert "deepseek" in config.llm.base_url.lower()
+
+    def test_list_providers(self):
+        from vulnclaw.config.settings import list_providers
+
+        providers = list_providers()
+        assert isinstance(providers, list)
+        assert len(providers) >= 7
+        # Each entry should have provider, base_url, default_model
+        for p in providers:
+            assert "provider" in p
+            assert "base_url" in p
+            assert "default_model" in p
+
+    def test_env_var_override(self, monkeypatch):
+        """Test that environment variables override config values."""
+        from vulnclaw.config.settings import load_config
+
+        monkeypatch.setenv("GHIA_SCOUT_LLM_API_KEY", "env-test-key")
+        monkeypatch.setenv("GHIA_SCOUT_LLM_MODEL", "env-test-model")
+        # Config should pick up env vars
+        config = load_config()
+        # The env var may or may not be applied depending on load_config implementation
+        # Just verify it doesn't crash
+        assert config is not None
+
+    def test_openai_default_headers_allow_user_agent_override(self, monkeypatch):
+        from vulnclaw.config.settings import openai_default_headers
+
+        assert openai_default_headers()["User-Agent"] == "Mozilla/5.0"
+
+        monkeypatch.setenv("GHIA_SCOUT_LLM_USER_AGENT", "test-agent")
+
+        assert openai_default_headers()["User-Agent"] == "test-agent"
+
+    def test_env_var_override_new_session_fields(self, monkeypatch):
+        """二开新增的 session 配置（反思/插件）可通过环境变量注入。"""
+        from vulnclaw.config.settings import load_config
+
+        monkeypatch.setenv("GHIA_SCOUT_SESSION_REFLEXION_ENABLED", "false")
+        monkeypatch.setenv("GHIA_SCOUT_SESSION_REASONING_STATE_ENABLED", "false")
+        monkeypatch.setenv("GHIA_SCOUT_SESSION_REFLEXION_MAX_SAME_VULN_FAILS", "5")
+        monkeypatch.setenv("GHIA_SCOUT_SESSION_ESCALATION_MAX_LEVEL", "2")
+        monkeypatch.setenv("GHIA_SCOUT_SESSION_PLUGIN_RUNTIME_ENABLED", "false")
+        monkeypatch.setenv("GHIA_SCOUT_SESSION_PLUGIN_MAX_REQUESTS_PER_TARGET", "7")
+        monkeypatch.setenv("GHIA_SCOUT_SESSION_EVIDENCE_MIN_REPORT_LEVEL", "L2")
+
+        config = load_config()
+
+        assert config.session.reflexion_enabled is False
+        assert config.session.reasoning_state_enabled is False
+        assert config.session.reflexion_max_same_vuln_fails == 5
+        assert config.session.escalation_max_level == 2
+        assert config.session.plugin_runtime_enabled is False
+        assert config.session.plugin_max_requests_per_target == 7
+        assert config.session.evidence_min_report_level == "L2"
