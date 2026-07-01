@@ -40,7 +40,7 @@ class ReflexionEngine(BaseModel):
     max_same_vuln_fails: int = 2
     max_total_no_progress: int = 5
     max_reflections_before_escalate: int = 3
-    escalation_max_level: int = 5
+    escalation_max_level: int = 4
     state: ReflexionState = Field(default_factory=ReflexionState)
 
     def record_attempt(
