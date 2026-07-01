@@ -75,15 +75,19 @@ def test_reflections_drive_escalation_and_reset_failure_counters():
 def test_escalation_hints_are_level_specific_and_capped():
     engine = ReflexionEngine()
 
-    assert engine.get_escalation_hints() == ["先尝试原始 payload（不编码）。"]
+    assert engine.get_escalation_hints() == [
+        "先尝试原始 payload（不编码）。",
+        "确认注入点类型（GET参数/POST body/Header/Cookie/JSON/XML）。",
+        "验证错误响应是否反映了输入（错误回显 vs 盲注）。",
+    ]
 
     for index in range(10):
         engine.record_attempt(path=f"path_{index}", success=False, vuln_type="sqli")
 
     assert engine.get_escalation_level() == 4
     hints = engine.get_escalation_hints()
-    assert "组合多层编码混淆。" in hints
-    assert "切换到完全不同的漏洞类型/攻击面。" in hints
+    assert "组合多层编码：先 HTML 实体 + 再 URL 编码 + 再 Unicode 转义。" in hints
+    assert "切换到完全不同的漏洞类型/攻击面（换 SSRF、XXE、SSTI、文件上传等）。" in hints
 
 
 def test_analyze_failure_patterns_groups_by_category():
