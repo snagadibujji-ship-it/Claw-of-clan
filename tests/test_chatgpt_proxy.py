@@ -184,6 +184,7 @@ def mock_backend(monkeypatch):
     port = srv.server_address[1]
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     monkeypatch.setenv("GHIA_SCOUT_CHATGPT_BACKEND_URL", f"http://127.0.0.1:{port}/responses")
+    monkeypatch.setenv("GHIA_SCOUT_CHATGPT_MODELS_URL", f"http://127.0.0.1:{port}/models")
     monkeypatch.setattr(cp, "_resolve_credentials", lambda: ("tok-123", "acct-9"))
     yield received
     srv.shutdown()
