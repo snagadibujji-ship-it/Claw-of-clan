@@ -669,6 +669,182 @@ def execute(operation: str, input_str: str, **kwargs) -> dict:
         return {"success": False, "result": "", "error": f"执行 {operation} 时出错: {e}"}
 
 
+# ── RSA Attack Suite ─────────────────────────────────────────────────
+
+
+def rsa_small_exponent_attack(n: int, c: int, e: int = 3) -> dict:
+    """RSA small exponent (e=3) cube-root attack when message is unpadded."""
+    import math
+    results = [f"[rsa_small_exponent] e={e} n={n} c={c}"]
+    # Integer cube root of c
+    m_candidate = round(c ** (1.0 / e))
+    for delta in range(-2, 3):
+        m = m_candidate + delta
+        if pow(m, e) == c:
+            try:
+                plaintext = m.to_bytes((m.bit_length() + 7) // 8, "big").decode(errors="replace")
+            except Exception:
+                plaintext = hex(m)
+            results.append(f"  *** RECOVERED: m={m}  plaintext={plaintext!r}")
+            return {"success": True, "result": "\n".join(results), "m": m, "plaintext": plaintext}
+    results.append("  Simple cube-root failed — message may be padded or e>3")
+    return {"success": False, "result": "\n".join(results)}
+
+
+def rsa_common_modulus_attack(n: int, e1: int, e2: int, c1: int, c2: int) -> dict:
+    """RSA common modulus attack — two ciphertexts of same m with different e under same n."""
+    import math
+    results = ["[rsa_common_modulus]"]
+
+    def extended_gcd(a: int, b: int) -> tuple[int, int, int]:
+        if a == 0:
+            return b, 0, 1
+        g, x, y = extended_gcd(b % a, a)
+        return g, y - (b // a) * x, x
+
+    g, s, t = extended_gcd(e1, e2)
+    if g != 1:
+        results.append(f"  gcd(e1,e2)={g} != 1 — attack not applicable")
+        return {"success": False, "result": "\n".join(results)}
+
+    # m = c1^s * c2^t mod n
+    if s < 0:
+        c1_inv = pow(c1, -1, n)
+        m = (pow(c1_inv, -s, n) * pow(c2, t, n)) % n
+    else:
+        m = (pow(c1, s, n) * pow(c2, t, n)) % n
+
+    try:
+        plaintext = m.to_bytes((m.bit_length() + 7) // 8, "big").decode(errors="replace")
+    except Exception:
+        plaintext = hex(m)
+    results.append(f"  *** RECOVERED: m={hex(m)}  plaintext={plaintext!r}")
+    return {"success": True, "result": "\n".join(results), "m": m, "plaintext": plaintext}
+
+
+def rsa_wiener_attack(n: int, e: int) -> dict:
+    """Wiener's attack on RSA with small d (d < N^0.25)."""
+    results = [f"[rsa_wiener] e={e} n(bits)={n.bit_length()}"]
+
+    def continued_fraction(num: int, den: int):
+        while den:
+            yield num // den
+            num, den = den, num % den
+
+    def convergents(cf):
+        n0, n1 = 1, 0
+        d0, d1 = 0, 1
+        for q in cf:
+            n0, n1 = n1, q * n1 + n0
+            d0, d1 = d1, q * d1 + d0
+            yield n1, d1
+
+    for k, d in convergents(continued_fraction(e, n)):
+        if k == 0:
+            continue
+        if (e * d - 1) % k != 0:
+            continue
+        phi = (e * d - 1) // k
+        # Solve x^2 - (n - phi + 1)x + n = 0
+        b = n - phi + 1
+        disc = b * b - 4 * n
+        if disc < 0:
+            continue
+        sq = int(disc ** 0.5)
+        for sq_try in (sq, sq + 1):
+            if sq_try * sq_try == disc:
+                p = (b + sq_try) // 2
+                q = (b - sq_try) // 2
+                if p * q == n:
+                    results.append(f"  *** FOUND d={d}  p={p}  q={q}")
+                    return {"success": True, "result": "\n".join(results), "d": d, "p": p, "q": q}
+    results.append("  Wiener attack failed — d is probably not small enough")
+    return {"success": False, "result": "\n".join(results)}
+
+
+def rsa_factor_fermat(n: int, max_iter: int = 100000) -> dict:
+    """Fermat factorization — works when p and q are close together."""
+    import math
+    results = [f"[rsa_fermat] n(bits)={n.bit_length()}"]
+    a = math.isqrt(n)
+    if a * a == n:
+        results.append(f"  *** n is a perfect square: p=q={a}")
+        return {"success": True, "result": "\n".join(results), "p": a, "q": a}
+    a += 1
+    for _ in range(max_iter):
+        b2 = a * a - n
+        b = math.isqrt(b2)
+        if b * b == b2:
+            p, q = a - b, a + b
+            results.append(f"  *** FACTORED: p={p}  q={q}")
+            return {"success": True, "result": "\n".join(results), "p": p, "q": q}
+        a += 1
+    results.append(f"  Fermat failed after {max_iter} iterations")
+    return {"success": False, "result": "\n".join(results)}
+
+
+def rsa_decrypt_with_factors(n: int, e: int, c: int, p: int, q: int) -> dict:
+    """Given p, q, decrypt ciphertext c."""
+    results = ["[rsa_decrypt_with_factors]"]
+    phi = (p - 1) * (q - 1)
+    try:
+        d = pow(e, -1, phi)
+    except Exception as exc:
+        return {"success": False, "result": f"  Cannot compute d: {exc}"}
+    m = pow(c, d, n)
+    try:
+        plaintext = m.to_bytes((m.bit_length() + 7) // 8, "big").decode(errors="replace")
+    except Exception:
+        plaintext = hex(m)
+    results.append(f"  d = {d}")
+    results.append(f"  m = {hex(m)}")
+    results.append(f"  plaintext = {plaintext!r}")
+    return {"success": True, "result": "\n".join(results), "d": d, "m": m, "plaintext": plaintext}
+
+
+def hash_length_extension(
+    known_hash: str,
+    known_data: bytes,
+    append_data: bytes,
+    secret_len: int,
+    algorithm: str = "sha256",
+) -> dict:
+    """Hash length extension attack — extends a secret-prefix MAC without knowing the secret.
+
+    Requires `hashpumpy` library if available, otherwise returns manual instructions.
+    """
+    import hashlib
+    results = [f"[hash_length_extension] algo={algorithm} secret_len={secret_len}"]
+    results.append(f"  known_hash={known_hash}")
+    results.append(f"  append_data={append_data!r}")
+
+    try:
+        import hashpumpy
+        new_sig, new_msg = hashpumpy.hashpump(known_hash, known_data, append_data, secret_len)
+        results.append(f"  *** SUCCESS")
+        results.append(f"  new_hash={new_sig}")
+        results.append(f"  new_msg={new_msg!r}")
+        return {"success": True, "result": "\n".join(results), "new_hash": new_sig, "new_msg": new_msg}
+    except ImportError:
+        pass
+
+    # Manual calculation guide
+    algo_map = {"md5": (64, 16), "sha1": (64, 20), "sha256": (64, 32), "sha512": (128, 64)}
+    block_size, digest_size = algo_map.get(algorithm.lower(), (64, 32))
+    total_len = secret_len + len(known_data)
+    padding_len = block_size - (total_len % block_size)
+    if padding_len == 0:
+        padding_len = block_size
+    padding = b"\x80" + b"\x00" * (padding_len - 9) + (total_len * 8).to_bytes(8, "little")
+    forged_msg = known_data + padding + append_data
+
+    results.append("  hashpumpy not installed — manual forged message:")
+    results.append(f"  forged_msg (hex) = {forged_msg.hex()}")
+    results.append(f"  reinitialise {algorithm} state with known_hash and feed append_data")
+    results.append("  Install hashpumpy: pip install hashpumpy")
+    return {"success": False, "result": "\n".join(results), "forged_msg": forged_msg.hex()}
+
+
 def list_operations() -> dict[str, dict[str, str]]:
     """List all available operations with their descriptions."""
     return {

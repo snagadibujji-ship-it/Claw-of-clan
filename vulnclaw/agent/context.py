@@ -11,6 +11,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field, PrivateAttr
 
+from vulnclaw.agent.adaptive_recon import AdaptiveReconModel
 from vulnclaw.agent.blackboard import Blackboard
 from vulnclaw.agent.reasoning_state import ReasoningState
 
@@ -304,7 +305,14 @@ class SessionState(BaseModel):
     unverified_assumptions: list[str] = Field(
         default_factory=list, description="推理中基于但未验证的假设"
     )
-    # ★ Recon dimension completion tracking — prevent premature [DONE] in info gathering
+    # ★ Adaptive recon model — dynamically adapts dimensions to the detected target type
+    # (web / api / cloud / network / binary / mobile / iot)
+    adaptive_recon: AdaptiveReconModel = Field(
+        default_factory=AdaptiveReconModel,
+        description="自适应侦察维度模型（根据目标类型动态调整）",
+    )
+
+    # ★ Legacy recon dimension completion tracking (kept for backward compatibility)
     recon_dimensions_completed: dict[str, bool] = Field(
         default_factory=lambda: {
             "server": False,  # 维度一：服务器信息（端口/真实IP/OS/中间件/数据库）
@@ -312,7 +320,7 @@ class SessionState(BaseModel):
             "domain": False,  # 维度三：域名信息（WHOIS/ICP备案/子域名/DNS/证书透明度）
             "personnel": False,  # 维度四：人员信息（条件触发 — 仅明确社工需求时激活）
         },
-        description="信息收集四维模型完成度追踪",
+        description="信息收集四维模型完成度追踪（旧版，已由 adaptive_recon 取代）",
     )
     recon_dimension4_active: bool = Field(default=False, description="维度四（人员信息）是否被激活")
 

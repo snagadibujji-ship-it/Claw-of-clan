@@ -20,7 +20,9 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from vulnclaw.agent.blackboard import Blackboard, BoardIntent, IntentStatus
+from vulnclaw.agent.board_compactor import compact_if_needed
 from vulnclaw.agent.llm_client import build_chat_completion_kwargs, call_llm_auto
+from vulnclaw.agent.target_classifier import TargetProfile, classify_target, reclassify_from_facts
 from vulnclaw.agent.think_filter import strip_think_tags
 
 # 探索阶段判定「已推进/已确认结论」的信号（宽泛匹配，避免漏判有进展的 intent）
@@ -506,6 +508,21 @@ async def solve(
     board.goal = goal or board.goal
     guard = BoardGuard(board)
 
+    # ── Target classification — adapt tool rounds and parallelism per target type
+    target_profile: TargetProfile = classify_target(origin, goal, hints)
+    # Override tool rounds if not explicitly customised by caller
+    if max_tool_rounds == 4 and target_profile.recommended_tool_rounds != 4:
+        max_tool_rounds = target_profile.recommended_tool_rounds
+    # Disable parallelism for target types where it causes issues (binary/mobile/iot)
+    if not target_profile.supports_parallel and max_parallel > 1:
+        max_parallel = 1
+    emit_profile = {"type": target_profile.target_type, "confidence": target_profile.confidence}
+    # Store profile in agent context if supported
+    if hasattr(agent, "context") and hasattr(agent.context, "state"):
+        state = agent.context.state
+        if hasattr(state, "adaptive_recon") and state.adaptive_recon is not None:
+            state.adaptive_recon.initialize(target_profile.target_type)
+
     def emit(kind: str, payload: dict) -> None:
         if on_event is not None:
             on_event(kind, payload)
@@ -732,6 +749,23 @@ async def solve(
                 break
 
             steps += len(batch)
+
+            # ── Board compaction — prevent context-window exhaustion ──────────
+            compacted = compact_if_needed(board)
+            if compacted["facts_removed"] > 0 or compacted["tool_calls_trimmed"] > 0:
+                emit("compacted", compacted)
+
+            # ── Re-classify target type from accumulated facts every 5 steps ──
+            if steps % 5 == 0 and len(board.facts) >= 3:
+                fact_texts = [f.description for f in board.facts]
+                target_profile = reclassify_from_facts(target_profile, fact_texts)
+                if hasattr(agent, "context") and hasattr(agent.context, "state"):
+                    state = agent.context.state
+                    if hasattr(state, "adaptive_recon") and state.adaptive_recon is not None:
+                        newly = state.adaptive_recon.auto_advance(fact_texts)
+                        if newly:
+                            emit("recon_advance", {"dimensions": newly})
+
             agent.context.state.save()
 
             if is_parallel:

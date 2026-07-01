@@ -144,6 +144,62 @@ async def execute_mcp_tool(agent: Any, tool_name: str, args: dict[str, Any]) -> 
         except Exception as e:
             return f"[!] 工具执行错误 ({tool_name}): {e}"
 
+    # ── Advanced exploit tools (graphql_audit, websocket_fuzz, smb_scan, privesc_scan, metasploit_rpc)
+    from vulnclaw.agent import advanced_exploit_tools
+
+    advanced_result = await advanced_exploit_tools.dispatch(agent, tool_name, args)
+    if advanced_result is not None:
+        return advanced_result
+
+    # ── Web exploit tools (xxe_inject, file_upload_bypass, ssrf_chain, jwt_attack)
+    from vulnclaw.agent import web_exploit_tools
+
+    web_result = await web_exploit_tools.dispatch(agent, tool_name, args)
+    if web_result is not None:
+        return web_result
+
+    # ── CTF binary tools (checksec_binary, ropgadget_search, z3_solve, pwntools_exploit, flag_hunter)
+    from vulnclaw.agent import ctf_binary_tools
+
+    ctf_result = await ctf_binary_tools.dispatch(agent, tool_name, args)
+    if ctf_result is not None:
+        return ctf_result
+
+    # ── Session store tools (session_save, session_resume, session_list, session_diff)
+    from vulnclaw.agent.session_store import dispatch_session_tool
+
+    session_result = await dispatch_session_tool(agent, tool_name, args)
+    if session_result is not None:
+        return session_result
+
+    # ── OSINT tools (whois_lookup, cert_transparency, subdomain_takeover, github_dork, shodan_lite, dns_recon)
+    from vulnclaw.agent import osint_tools
+
+    osint_result = await osint_tools.dispatch(agent, tool_name, args)
+    if osint_result is not None:
+        return osint_result
+
+    # ── Payload generator (generate_payloads, generate_wordlist)
+    from vulnclaw.agent import payload_generator
+
+    payload_result = await payload_generator.dispatch(agent, tool_name, args)
+    if payload_result is not None:
+        return payload_result
+
+    # ── Auto-chain engine (suggest_next_tools, run_attack_chain)
+    from vulnclaw.agent import auto_chain
+
+    chain_result = await auto_chain.dispatch(agent, tool_name, args)
+    if chain_result is not None:
+        return chain_result
+
+    # ── Cloud misconfig scanner (s3_enum, gcs_enum, azure_enum, cloud_metadata_probe)
+    from vulnclaw.agent import cloud_misconfig
+
+    cloud_result = await cloud_misconfig.dispatch(agent, tool_name, args)
+    if cloud_result is not None:
+        return cloud_result
+
     if not agent.mcp_manager:
         return f"[!] MCP 管理器未初始化，无法执行工具: {tool_name}"
 

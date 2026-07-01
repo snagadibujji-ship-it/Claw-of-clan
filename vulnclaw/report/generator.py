@@ -100,6 +100,7 @@ REPORT_TEMPLATE = """\
 - **生命周期**: {{ finding.lifecycle_status or "pending_verification" }}
 - **证据等级**: {{ finding.evidence_level or "L1" }}
 - **CVE**: {{ finding.cve or "N/A" }}
+- **CVSS 评分**: {{ finding.cvss_score if finding.cvss_score else cvss_map.get(finding.severity, "N/A") }} {{ cvss_badge(finding.severity) }}
 - **影响范围**: {{ finding.description or "无" }}
 {% if finding.evidence %}
 - **验证证据**: {{ finding.evidence }}
@@ -295,6 +296,15 @@ def generate_report(
         "rejected_findings": rejected_findings,
         "step_summary": session.get_step_summary(),
         "llm_attack_summary": filtered_summary,
+        "cvss_map": {
+            "Critical": "9.0–10.0",
+            "High": "7.0–8.9",
+            "Medium": "4.0–6.9",
+            "Low": "0.1–3.9",
+            "Info": "0.0",
+        },
+        "cvss_badge": lambda sev: {"Critical": "🔴", "High": "🟠", "Medium": "🟡",
+                                    "Low": "🟢", "Info": "⚪"}.get(sev, ""),
     }
 
     template = Template(REPORT_TEMPLATE)
