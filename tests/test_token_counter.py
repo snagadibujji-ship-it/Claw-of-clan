@@ -1,6 +1,6 @@
-"""Tests for vulnclaw.agent.token_counter — estimation + sliding-window truncation."""
+"""Tests for ghia_scout.agent.token_counter — estimation + sliding-window truncation."""
 
-from vulnclaw.agent.token_counter import (
+from ghia_scout.agent.token_counter import (
     estimate_message_tokens,
     estimate_tokens,
     truncate_messages,

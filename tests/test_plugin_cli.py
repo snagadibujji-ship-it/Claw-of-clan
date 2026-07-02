@@ -4,7 +4,7 @@ import json
 
 from typer.testing import CliRunner
 
-from vulnclaw.cli.main import app
+from ghia_scout.cli.main import app
 
 runner = CliRunner()
 

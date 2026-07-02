@@ -1,9 +1,9 @@
 import pytest
 
-from vulnclaw.agent.context import PentestPhase
-from vulnclaw.agent.core import AgentCore
-from vulnclaw.agent.reflexion import FailureCategory
-from vulnclaw.config.schema import GHIAScoutConfig
+from ghia_scout.agent.context import PentestPhase
+from ghia_scout.agent.core import AgentCore
+from ghia_scout.agent.reflexion import FailureCategory
+from ghia_scout.config.schema import GHIAScoutConfig
 
 
 def _make_agent(tmp_path, reflexion_enabled=True):
@@ -20,7 +20,7 @@ async def test_consecutive_same_failures_generate_reflexion_prompt(tmp_path, mon
     agent = _make_agent(tmp_path, reflexion_enabled=True)
     captured_contexts = []
 
-    from vulnclaw.agent import loop_controller
+    from ghia_scout.agent import loop_controller
 
     async def _fake_call_llm_auto(agent_obj, system_prompt, round_context, **kwargs):
         captured_contexts.append(round_context)

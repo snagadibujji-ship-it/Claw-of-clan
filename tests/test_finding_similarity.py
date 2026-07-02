@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from vulnclaw.agent.context import VulnerabilityFinding
-from vulnclaw.agent.finding_similarity import (
+from ghia_scout.agent.context import VulnerabilityFinding
+from ghia_scout.agent.finding_similarity import (
     deduplicate_findings,
     finding_similarity,
     normalize_text,
@@ -240,7 +240,7 @@ class TestDeduplicateFindings:
 
 class TestSessionStateIntegration:
     def test_semantic_dedup_on_add(self):
-        from vulnclaw.agent.context import SessionState
+        from ghia_scout.agent.context import SessionState
 
         state = SessionState(target="t.com")
         f1 = _mk(
@@ -260,7 +260,7 @@ class TestSessionStateIntegration:
         assert len(state.findings) == 1
 
     def test_distinct_findings_both_added(self):
-        from vulnclaw.agent.context import SessionState
+        from ghia_scout.agent.context import SessionState
 
         state = SessionState(target="t.com")
         assert state.add_finding(

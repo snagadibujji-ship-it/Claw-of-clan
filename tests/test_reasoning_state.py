@@ -1,4 +1,4 @@
-from vulnclaw.agent.reasoning_state import (
+from ghia_scout.agent.reasoning_state import (
     ConstraintCategory,
     ConstraintSeverity,
     PathStatus,

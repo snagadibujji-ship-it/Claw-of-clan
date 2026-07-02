@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from vulnclaw.agent.blackboard import Blackboard, IntentStatus
+from ghia_scout.agent.blackboard import Blackboard, IntentStatus
 
 
 def test_fact_and_intent_ids_are_sequential():

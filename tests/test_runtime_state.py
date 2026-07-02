@@ -1,4 +1,4 @@
-from vulnclaw.agent.runtime_state import RuntimeState
+from ghia_scout.agent.runtime_state import RuntimeState
 
 
 def test_runtime_state_has_reflexion_field():

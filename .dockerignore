@@ -32,8 +32,8 @@ frontend/.vite/
 frontend/.npm-cache/
 frontend/*.tsbuildinfo
 
-# VulnClaw runtime state (lives in the /data volume)
-.vulnclaw/
+# GHIA Scout runtime state (lives in the /data volume)
+.ghia_scout/
 sessions/
 reports/
 pocs/

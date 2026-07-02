@@ -12,8 +12,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from vulnclaw.config import token_provider as tp
-from vulnclaw.config.schema import LLMConfig
+from ghia_scout.config import token_provider as tp
+from ghia_scout.config.schema import LLMConfig
 
 
 @pytest.fixture
@@ -157,7 +157,7 @@ def test_chatgpt_login_and_refresh(_config_dir, monkeypatch):
         assert bundle["account_id"] == "acct-XYZ"
         assert bundle["flow"] == "chatgpt"
 
-        # config mirrors what `vulnclaw login` persists (Codex token endpoint).
+        # config mirrors what `ghia_scout login` persists (Codex token endpoint).
         llm = LLMConfig(
             auth_mode="oauth",
             oauth_token_url=f"http://127.0.0.1:{port}/token",

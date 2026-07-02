@@ -11,7 +11,7 @@ class TestPentestPhase:
     """Test PentestPhase enum."""
 
     def test_phase_values(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         assert PentestPhase.IDLE.value == "就绪"
         assert PentestPhase.RECON.value == "信息收集"
@@ -21,7 +21,7 @@ class TestPentestPhase:
         assert PentestPhase.REPORTING.value == "报告生成"
 
     def test_phase_is_str(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         # PentestPhase inherits from str, Enum
         assert isinstance(PentestPhase.RECON, str)
@@ -31,7 +31,7 @@ class TestVulnerabilityFinding:
     """Test VulnerabilityFinding model."""
 
     def test_default_values(self):
-        from vulnclaw.agent.context import VulnerabilityFinding
+        from ghia_scout.agent.context import VulnerabilityFinding
 
         finding = VulnerabilityFinding(title="Test Vuln")
         assert finding.title == "Test Vuln"
@@ -42,7 +42,7 @@ class TestVulnerabilityFinding:
         assert finding.lifecycle_status == "candidate"
 
     def test_full_values(self):
-        from vulnclaw.agent.context import VulnerabilityFinding
+        from ghia_scout.agent.context import VulnerabilityFinding
 
         finding = VulnerabilityFinding(
             title="SQL Injection",
@@ -62,7 +62,7 @@ class TestSessionState:
     """Test SessionState model."""
 
     def test_default_state(self):
-        from vulnclaw.agent.context import PentestPhase, SessionState
+        from ghia_scout.agent.context import PentestPhase, SessionState
 
         state = SessionState()
         assert state.phase == PentestPhase.IDLE
@@ -71,7 +71,7 @@ class TestSessionState:
         assert state.executed_steps == []
 
     def test_advance_phase(self):
-        from vulnclaw.agent.context import PentestPhase, SessionState
+        from ghia_scout.agent.context import PentestPhase, SessionState
 
         state = SessionState()
         state.advance_phase(PentestPhase.RECON)
@@ -81,7 +81,7 @@ class TestSessionState:
         assert "信息收集" in state.executed_steps[0]
 
     def test_add_finding(self):
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         state = SessionState()
         state.add_finding(VulnerabilityFinding(title="XSS", severity="High"))
@@ -90,7 +90,7 @@ class TestSessionState:
         assert "XSS" in state.findings[0].title
 
     def test_add_step(self):
-        from vulnclaw.agent.context import SessionState
+        from ghia_scout.agent.context import SessionState
 
         state = SessionState()
         state.add_step("Scanned port 80")
@@ -98,14 +98,14 @@ class TestSessionState:
         assert len(state.executed_steps) == 1
 
     def test_add_note(self):
-        from vulnclaw.agent.context import SessionState
+        from ghia_scout.agent.context import SessionState
 
         state = SessionState()
         state.add_note("Interesting endpoint found")
         assert len(state.notes) == 1
 
     def test_add_confirmed_fact_updates_reasoning(self):
-        from vulnclaw.agent.context import SessionState
+        from ghia_scout.agent.context import SessionState
 
         state = SessionState()
         state.add_confirmed_fact("CVE-2024-1234 confirmed on https://example.com")
@@ -117,7 +117,7 @@ class TestSessionState:
         assert state.reasoning.facts[0].confidence == 0.99
 
     def test_save_and_load(self, tmp_path):
-        from vulnclaw.agent.context import PentestPhase, SessionState, VulnerabilityFinding
+        from ghia_scout.agent.context import PentestPhase, SessionState, VulnerabilityFinding
 
         state = SessionState(target="192.168.1.100")
         state.advance_phase(PentestPhase.RECON)
@@ -137,7 +137,7 @@ class TestSessionState:
         assert loaded.reasoning.facts[0].value == "port 80 open"
 
     def test_multiple_findings(self):
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         state = SessionState()
         severities = ["Critical", "High", "Medium", "Low", "Info"]
@@ -148,7 +148,7 @@ class TestSessionState:
         assert len(state.findings) == 5
 
     def test_recon_data(self):
-        from vulnclaw.agent.context import SessionState
+        from ghia_scout.agent.context import SessionState
 
         state = SessionState()
         state.recon_data = {"ports": [80, 443], "services": ["nginx", "mysql"]}
@@ -159,7 +159,7 @@ class TestContextManager:
     """Test ContextManager."""
 
     def test_add_messages(self):
-        from vulnclaw.agent.context import ContextManager
+        from ghia_scout.agent.context import ContextManager
 
         cm = ContextManager()
         cm.add_user_message("Hello")
@@ -169,7 +169,7 @@ class TestContextManager:
         assert cm.get_messages()[1]["role"] == "assistant"
 
     def test_max_history(self):
-        from vulnclaw.agent.context import ContextManager
+        from ghia_scout.agent.context import ContextManager
 
         cm = ContextManager(max_history=5)
         for i in range(10):
@@ -178,7 +178,7 @@ class TestContextManager:
         assert len(cm.get_messages()) <= 5
 
     def test_reset(self):
-        from vulnclaw.agent.context import ContextManager
+        from ghia_scout.agent.context import ContextManager
 
         cm = ContextManager()
         cm.add_user_message("Hello")
@@ -187,7 +187,7 @@ class TestContextManager:
         assert cm.state.target is None
 
     def test_session_state_access(self):
-        from vulnclaw.agent.context import ContextManager, PentestPhase
+        from ghia_scout.agent.context import ContextManager, PentestPhase
 
         cm = ContextManager()
         cm.state.target = "10.0.0.1"
@@ -200,9 +200,9 @@ class TestAgentAutoSave:
     """Test agent auto-save behavior."""
 
     def test_auto_save_respects_config(self, monkeypatch, tmp_path):
-        from vulnclaw.agent.context import SessionState
-        from vulnclaw.agent.core import AgentCore
-        from vulnclaw.config.schema import GHIAScoutConfig
+        from ghia_scout.agent.context import SessionState
+        from ghia_scout.agent.core import AgentCore
+        from ghia_scout.config.schema import GHIAScoutConfig
 
         config = GHIAScoutConfig()
         config.session.auto_save = False
@@ -224,8 +224,8 @@ class TestTargetState:
     """Test target-level resume state."""
 
     def test_target_state_save_and_load(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import PentestPhase, SessionState
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import PentestPhase, SessionState
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -240,8 +240,8 @@ class TestTargetState:
         assert "历史成果摘要" in restored.resume_summary
 
     def test_target_state_merges_findings(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
 
@@ -261,8 +261,8 @@ class TestTargetState:
         assert "XSS" in titles
 
     def test_target_state_resume_strategy_prefers_pending(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -281,8 +281,8 @@ class TestTargetState:
     def test_target_state_preview_carries_structured_constraint_violation_events(
         self, monkeypatch, tmp_path
     ):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -303,8 +303,8 @@ class TestTargetState:
         assert preview["constraint_violation_events"][0]["source"] == "tool"
 
     def test_target_state_resume_strategy_prefers_exploit_on_verified(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -327,8 +327,8 @@ class TestTargetState:
         assert "next_actions" in restored.resume_meta
 
     def test_target_state_confidence_is_persisted(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -343,8 +343,8 @@ class TestTargetState:
         assert meta["confidence"] > 0
 
     def test_target_state_recon_meta_is_persisted(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -364,8 +364,8 @@ class TestTargetState:
         assert raw["recon_meta"]["params"]["id"]["observation_count"] >= 1
 
     def test_target_state_resume_summary_includes_recon_assets(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -387,9 +387,9 @@ class TestTargetState:
     def test_target_state_resume_strategy_exposes_recon_priority_targets(
         self, monkeypatch, tmp_path
     ):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState
-        from vulnclaw.agent.runtime_state import RuntimeState
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState
+        from ghia_scout.agent.runtime_state import RuntimeState
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -409,9 +409,9 @@ class TestTargetState:
         assert raw["resume_meta"]["priority_recon_assets"]
 
     def test_target_state_runtime_meta_is_persisted(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState
-        from vulnclaw.agent.runtime_state import RuntimeState
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState
+        from ghia_scout.agent.runtime_state import RuntimeState
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -435,9 +435,9 @@ class TestTargetState:
         assert raw["runtime_meta"]["failed_steps"]
 
     def test_target_state_resume_summary_includes_runtime_signals(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState
-        from vulnclaw.agent.runtime_state import RuntimeState
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState
+        from ghia_scout.agent.runtime_state import RuntimeState
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
         state = SessionState(target="https://example.com")
@@ -455,8 +455,8 @@ class TestTargetState:
         assert "最近失败路径/步骤" in restored.resume_summary
 
     def test_target_state_snapshots_and_rollback(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
 
@@ -479,8 +479,8 @@ class TestTargetState:
         assert "SQLi" in titles
 
     def test_target_state_schema_preview_and_diff(self, monkeypatch, tmp_path):
-        import vulnclaw.target_state.store as store_mod
-        from vulnclaw.agent.context import SessionState, VulnerabilityFinding
+        import ghia_scout.target_state.store as store_mod
+        from ghia_scout.agent.context import SessionState, VulnerabilityFinding
 
         monkeypatch.setattr(store_mod, "TARGETS_DIR", tmp_path)
 
@@ -520,7 +520,7 @@ class TestMemoryStore:
     """Test MemoryStore."""
 
     def test_save_and_retrieve(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store = MemoryStore(store_dir=tmp_path)
         store.save("test_key", {"data": "test_value"})
@@ -528,13 +528,13 @@ class TestMemoryStore:
         assert result == {"data": "test_value"}
 
     def test_retrieve_nonexistent(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store = MemoryStore(store_dir=tmp_path)
         assert store.retrieve("nonexistent") is None
 
     def test_list_keys(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store = MemoryStore(store_dir=tmp_path)
         store.save("key1", "val1")
@@ -544,7 +544,7 @@ class TestMemoryStore:
         assert "key2" in keys
 
     def test_delete(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store = MemoryStore(store_dir=tmp_path)
         store.save("to_delete", "value")
@@ -552,7 +552,7 @@ class TestMemoryStore:
         assert store.retrieve("to_delete") is None
 
     def test_search(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store = MemoryStore(store_dir=tmp_path)
         store.save("sqli_info", {"type": "SQL Injection", "severity": "High"})
@@ -562,7 +562,7 @@ class TestMemoryStore:
         assert results[0][0] == "sqli_info"
 
     def test_persistence(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store1 = MemoryStore(store_dir=tmp_path)
         store1.save("persistent", "value_across_sessions")
@@ -571,7 +571,7 @@ class TestMemoryStore:
         assert store2.retrieve("persistent") == "value_across_sessions"
 
     def test_overwrite(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store = MemoryStore(store_dir=tmp_path)
         store.save("key", "original")
@@ -579,7 +579,7 @@ class TestMemoryStore:
         assert store.retrieve("key") == "updated"
 
     def test_complex_value(self, tmp_path):
-        from vulnclaw.agent.memory import MemoryStore
+        from ghia_scout.agent.memory import MemoryStore
 
         store = MemoryStore(store_dir=tmp_path)
         complex_val = {
@@ -599,33 +599,33 @@ class TestPromptBuilder:
     """Test prompt building."""
 
     def test_basic_prompt(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         prompt = build_system_prompt()
         assert "GHIA Scout" in prompt
         assert "渗透测试" in prompt
 
     def test_prompt_with_target(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         prompt = build_system_prompt(target="192.168.1.100")
         assert "192.168.1.100" in prompt
 
     def test_prompt_with_phase(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         prompt = build_system_prompt(phase="信息收集")
         assert "信息收集" in prompt
 
     def test_prompt_with_skill_context(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         prompt = build_system_prompt(skill_context="这是逆向分析的 Skill 上下文")
         assert "逆向分析" in prompt
         assert "Skill 上下文" in prompt
 
     def test_prompt_with_mcp_tools(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         tools = [
             {
@@ -642,21 +642,21 @@ class TestPromptBuilder:
         assert "URL to fetch" in prompt
 
     def test_waf_bypass_knowledge_included(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         prompt = build_system_prompt()
         assert "WAF" in prompt
         assert "base64" in prompt
 
     def test_core_contract_included(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         prompt = build_system_prompt()
         assert "沙盒模式" in prompt
         assert "证据冲突" in prompt
 
     def test_all_phases_render(self):
-        from vulnclaw.agent.prompts import build_system_prompt
+        from ghia_scout.agent.prompts import build_system_prompt
 
         phases = ["信息收集", "漏洞发现", "漏洞利用", "后渗透", "报告生成"]
         for phase in phases:
@@ -671,8 +671,8 @@ class TestAgentCore:
     """Test AgentCore."""
 
     def _make_agent(self):
-        from vulnclaw.agent.core import AgentCore
-        from vulnclaw.config.schema import GHIAScoutConfig
+        from ghia_scout.agent.core import AgentCore
+        from ghia_scout.config.schema import GHIAScoutConfig
 
         return AgentCore(GHIAScoutConfig())
 
@@ -682,7 +682,7 @@ class TestAgentCore:
         assert agent.context is not None
 
     def test_phase_detection_recon(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         assert agent._detect_phase("扫描 192.168.1.100 的端口") == PentestPhase.RECON
@@ -690,14 +690,14 @@ class TestAgentCore:
         assert agent._detect_phase("recon") == PentestPhase.RECON
 
     def test_phase_detection_vuln(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         assert agent._detect_phase("有什么漏洞") == PentestPhase.VULN_DISCOVERY
         assert agent._detect_phase("SQL注入") == PentestPhase.VULN_DISCOVERY
 
     def test_phase_detection_exploit(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         assert agent._detect_phase("exploit") == PentestPhase.EXPLOITATION
@@ -707,13 +707,13 @@ class TestAgentCore:
         assert agent._detect_phase("poc验证") == PentestPhase.EXPLOITATION
 
     def test_phase_detection_post(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         assert agent._detect_phase("后渗透") == PentestPhase.POST_EXPLOITATION
 
     def test_phase_detection_report(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         assert agent._detect_phase("生成渗透报告") == PentestPhase.REPORTING
@@ -823,7 +823,7 @@ class TestAgentCore:
         assert agent.context.state.recon_dimensions_completed["server"] is True
 
     def test_trim_summary_uses_system_role(self):
-        from vulnclaw.agent.context import ContextManager
+        from ghia_scout.agent.context import ContextManager
 
         cm = ContextManager(max_history=5)
         for i in range(8):
@@ -877,7 +877,7 @@ class TestAgentCore:
         assert verified[0].lifecycle_status == "verified"
 
     def test_phase_detection_from_output(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         assert agent._detect_phase_from_output("进入漏洞发现阶段") == PentestPhase.VULN_DISCOVERY
@@ -903,7 +903,7 @@ class TestAgentCore:
         assert agent.context.state.recon_dimension4_active is False
 
     def test_reset_runtime_state_for_recon_initializes_expected_fields(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         agent._reset_runtime_state(
@@ -958,7 +958,7 @@ class TestAgentCore:
         assert agent.runtime.consecutive_errors == 0
 
     def test_build_round_context_consumes_user_vuln_hint_rounds(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         agent.context.state.advance_phase(PentestPhase.VULN_DISCOVERY)
@@ -977,14 +977,14 @@ class TestAgentCore:
         assert agent.runtime.user_vuln_hint_rounds == 1
 
     def test_extract_task_constraints_parses_allowed_ports(self):
-        from vulnclaw.agent.input_analysis import extract_task_constraints
+        from ghia_scout.agent.input_analysis import extract_task_constraints
 
         constraints = extract_task_constraints("对 https://example.com 只测试 443 端口")
         assert constraints.allowed_ports == [443]
         assert constraints.strict_mode is True
 
     def test_extract_task_constraints_infers_allowed_host_and_path(self):
-        from vulnclaw.agent.input_analysis import extract_task_constraints
+        from ghia_scout.agent.input_analysis import extract_task_constraints
 
         constraints = extract_task_constraints("对 https://example.com/admin 只测试这个路径")
         assert "example.com" in constraints.allowed_hosts
@@ -1000,7 +1000,7 @@ class TestAgentCore:
         This then caused fetch scope checks to fail because urlparse().hostname
         never returns a trailing dot per RFC 3986.
         """
-        from vulnclaw.agent.input_analysis import extract_task_constraints
+        from ghia_scout.agent.input_analysis import extract_task_constraints
 
         # The period after .com is sentence punctuation, not part of the URL
         constraints = extract_task_constraints("对 http://example.com. 进行渗透测试")
@@ -1009,7 +1009,7 @@ class TestAgentCore:
         assert all(not h.endswith(".") for h in constraints.allowed_hosts)
 
     def test_round_context_includes_hard_constraints(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         agent.context.state.advance_phase(PentestPhase.RECON)
@@ -1033,7 +1033,7 @@ class TestAgentCore:
 
         async def _fake_auto_pentest(*args, **kwargs):
             captured_inputs.append(kwargs.get("user_input", args[0] if args else ""))
-            from vulnclaw.agent.runtime_state import AgentResult
+            from ghia_scout.agent.runtime_state import AgentResult
 
             return [AgentResult(output="cycle", should_continue=False)]
 
@@ -1056,7 +1056,7 @@ class TestAgentCore:
         assert "仅允许测试端口: 443" in captured_inputs[1]
 
     def test_reset_runtime_state_clears_previous_run_contamination(self):
-        from vulnclaw.agent.context import PentestPhase
+        from ghia_scout.agent.context import PentestPhase
 
         agent = self._make_agent()
         agent.runtime.blocked_targets = {"old.example.com"}
@@ -1112,7 +1112,7 @@ class TestAgentCore:
         }
 
     def test_reset_runtime_state_preserves_existing_constraints_when_new_input_has_none(self):
-        from vulnclaw.agent.context import PentestPhase, TaskConstraints
+        from ghia_scout.agent.context import PentestPhase, TaskConstraints
 
         agent = self._make_agent()
         agent.context.state.task_constraints = TaskConstraints(
@@ -1132,8 +1132,8 @@ class TestAgentCoreLoop:
     """State-machine-level tests for auto_pentest / persistent_pentest loops."""
 
     def _make_agent(self):
-        from vulnclaw.agent.core import AgentCore
-        from vulnclaw.config.schema import GHIAScoutConfig
+        from ghia_scout.agent.core import AgentCore
+        from ghia_scout.config.schema import GHIAScoutConfig
 
         config = GHIAScoutConfig()
         config.llm.model = "gpt-4o-mini"
@@ -1141,7 +1141,7 @@ class TestAgentCoreLoop:
         return AgentCore(config=config)
 
     def test_llm_client_uses_max_completion_tokens_for_gpt5_models(self):
-        from vulnclaw.agent.llm_client import build_chat_completion_kwargs
+        from ghia_scout.agent.llm_client import build_chat_completion_kwargs
 
         class DummyAgent:
             class _DummyConfig:
@@ -1164,7 +1164,7 @@ class TestAgentCoreLoop:
         assert kwargs["reasoning_effort"] == "high"
 
     def test_llm_client_keeps_max_tokens_for_compatible_providers(self):
-        from vulnclaw.agent.llm_client import build_chat_completion_kwargs
+        from ghia_scout.agent.llm_client import build_chat_completion_kwargs
 
         class DummyAgent:
             class _DummyConfig:
@@ -1188,8 +1188,8 @@ class TestAgentCoreLoop:
 
     @pytest.mark.asyncio
     async def test_generate_attack_summary_uses_gpt5_token_parameter(self):
-        from vulnclaw.agent.context import SessionState
-        from vulnclaw.agent.prompt_context import generate_attack_summary
+        from ghia_scout.agent.context import SessionState
+        from ghia_scout.agent.prompt_context import generate_attack_summary
 
         captured_kwargs = {}
 
@@ -1246,7 +1246,7 @@ class TestAgentCoreLoop:
 
     @pytest.mark.asyncio
     async def test_llm_client_call_llm_auto_uses_shared_helper(self, monkeypatch):
-        from vulnclaw.agent import llm_client
+        from ghia_scout.agent import llm_client
 
         class DummyLoop:
             async def run_in_executor(self, executor, fn):
@@ -1305,7 +1305,7 @@ class TestAgentCoreLoop:
 
     @pytest.mark.asyncio
     async def test_llm_client_call_llm_auto_retries_within_same_round(self, monkeypatch):
-        from vulnclaw.agent import llm_client
+        from ghia_scout.agent import llm_client
 
         class DummyLoop:
             def __init__(self):
@@ -1382,7 +1382,7 @@ class TestAgentCoreLoop:
 
     @pytest.mark.asyncio
     async def test_llm_client_bad_request_errors_are_not_retried(self, monkeypatch):
-        from vulnclaw.agent import llm_client
+        from ghia_scout.agent import llm_client
 
         class DummyLoop:
             def __init__(self):
@@ -1438,7 +1438,7 @@ class TestAgentCoreLoop:
 
     @pytest.mark.asyncio
     async def test_llm_client_tool_summary_bad_request_degrades_to_plain_text(self, monkeypatch):
-        from vulnclaw.agent import llm_client
+        from ghia_scout.agent import llm_client
 
         class DummyLoop:
             def __init__(self):
@@ -1540,7 +1540,7 @@ class TestAgentCoreLoop:
 
     @pytest.mark.asyncio
     async def test_llm_client_does_not_persist_tool_summary_as_assistant_history(self, monkeypatch):
-        from vulnclaw.agent import llm_client
+        from ghia_scout.agent import llm_client
 
         class DummyLoop:
             def run_in_executor(self, executor, func):
@@ -1644,7 +1644,7 @@ class TestAgentCoreLoop:
     @pytest.mark.asyncio
     async def test_auto_pentest_stops_on_done_signal(self, monkeypatch):
         agent = self._make_agent()
-        from vulnclaw.agent import loop_controller
+        from ghia_scout.agent import loop_controller
 
         async def _fake_call_llm_auto(agent_obj, system_prompt, round_context, **kwargs):
             return "本轮未发现新漏洞，准备总结。\n[DONE]"
@@ -1659,7 +1659,7 @@ class TestAgentCoreLoop:
     @pytest.mark.asyncio
     async def test_auto_pentest_ctf_flag_state_machine(self, monkeypatch):
         agent = self._make_agent()
-        from vulnclaw.agent import loop_controller
+        from ghia_scout.agent import loop_controller
 
         round_responses = [
             "发现可疑文件，尝试读取。\nflag{test123}",
@@ -1688,7 +1688,7 @@ class TestAgentCoreLoop:
     @pytest.mark.asyncio
     async def test_auto_pentest_dead_loop_detects_same_path(self, monkeypatch):
         agent = self._make_agent()
-        from vulnclaw.agent import loop_controller
+        from ghia_scout.agent import loop_controller
 
         async def _fake_call_llm_auto(agent_obj, system_prompt, round_context, **kwargs):
             # Same wording every round, with an attack-path keyword
@@ -1706,7 +1706,7 @@ class TestAgentCoreLoop:
     @pytest.mark.asyncio
     async def test_auto_pentest_blocks_phase_transition_when_action_not_allowed(self, monkeypatch):
         agent = self._make_agent()
-        from vulnclaw.agent import loop_controller
+        from ghia_scout.agent import loop_controller
 
         async def _fake_call_llm_auto(agent_obj, system_prompt, round_context, **kwargs):
             return "信息收集完成，切换到漏洞利用。\nphase: exploitation"
@@ -1723,14 +1723,14 @@ class TestAgentCoreLoop:
         assert agent.context.state.phase.value == "信息收集"
 
     def test_constraint_policy_normalizes_actions_and_validates_phase(self):
-        from vulnclaw.agent.constraint_policy import (
+        from ghia_scout.agent.constraint_policy import (
             infer_tool_action,
             normalize_action_name,
             validate_action_constraints,
             validate_phase_transition,
             validate_tool_action,
         )
-        from vulnclaw.agent.context import PentestPhase, TaskConstraints
+        from ghia_scout.agent.context import PentestPhase, TaskConstraints
 
         constraints = TaskConstraints(allowed_actions=["recon"], strict_mode=True)
         assert normalize_action_name("reporting") == "report"
@@ -1752,7 +1752,7 @@ class TestAgentCoreLoop:
     @pytest.mark.asyncio
     async def test_auto_pentest_blocks_repeatedly_failed_target(self, monkeypatch):
         agent = self._make_agent()
-        from vulnclaw.agent import loop_controller
+        from ghia_scout.agent import loop_controller
 
         async def _fake_call_llm_auto(agent_obj, system_prompt, round_context, **kwargs):
             return "访问 https://victim.local/admin 访问失败，连接超时。"
@@ -1774,7 +1774,7 @@ class TestAgentCoreLoop:
         async def _fake_auto_pentest(*args, **kwargs):
             nonlocal cycle_count
             cycle_count += 1
-            from vulnclaw.agent.runtime_state import AgentResult
+            from ghia_scout.agent.runtime_state import AgentResult
 
             return [AgentResult(output=f"cycle {cycle_count}", should_continue=False)]
 

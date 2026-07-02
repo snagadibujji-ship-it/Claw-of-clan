@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
-from vulnclaw.agent import recon_tools
-from vulnclaw.config.schema import ReconConfig, GHIAScoutConfig
+from ghia_scout.agent import recon_tools
+from ghia_scout.config.schema import ReconConfig, GHIAScoutConfig
 
 
 def _agent(recon: ReconConfig | None = None):
@@ -178,7 +178,7 @@ async def test_dir_enum_aborts_on_global_200(monkeypatch):
 
 async def test_dir_enum_filters_and_reports_hits(monkeypatch):
     def router(method, url, params, content):
-        if "vulnclaw_nope" in url:
+        if "ghia_scout_nope" in url:
             return _Resp(text="not found", status=404)
         if url.rstrip("/").endswith("/admin"):
             return _Resp(text="ADMIN PANEL " * 20, status=200)

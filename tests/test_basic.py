@@ -3,20 +3,20 @@
 import pytest
 
 
-def test_import_vulnclaw():
+def test_import_ghia_scout():
     """Test that the main package can be imported."""
     from pathlib import Path
 
     import toml
 
-    import vulnclaw
+    import ghia_scout
 
     # Read version from pyproject.toml to avoid hardcoding
     pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
     pyproject = toml.load(pyproject_path)
     expected_version = pyproject["project"]["version"]
 
-    assert vulnclaw.__version__ == expected_version
+    assert ghia_scout.__version__ == expected_version
 
 
 def test_all_submodules_importable():
@@ -28,24 +28,24 @@ def test_no_import_errors():
     import importlib
 
     modules = [
-        "vulnclaw",
-        "vulnclaw.config.schema",
-        "vulnclaw.config.settings",
-        "vulnclaw.agent.context",
-        "vulnclaw.agent.memory",
-        "vulnclaw.agent.prompts",
-        "vulnclaw.agent.core",
-        "vulnclaw.mcp.registry",
-        "vulnclaw.mcp.router",
-        "vulnclaw.mcp.lifecycle",
-        "vulnclaw.skills.loader",
-        "vulnclaw.skills.dispatcher",
-        "vulnclaw.kb.store",
-        "vulnclaw.kb.retriever",
-        "vulnclaw.kb.updater",
-        "vulnclaw.report.generator",
-        "vulnclaw.report.poc_builder",
-        "vulnclaw.cli.main",
+        "ghia_scout",
+        "ghia_scout.config.schema",
+        "ghia_scout.config.settings",
+        "ghia_scout.agent.context",
+        "ghia_scout.agent.memory",
+        "ghia_scout.agent.prompts",
+        "ghia_scout.agent.core",
+        "ghia_scout.mcp.registry",
+        "ghia_scout.mcp.router",
+        "ghia_scout.mcp.lifecycle",
+        "ghia_scout.skills.loader",
+        "ghia_scout.skills.dispatcher",
+        "ghia_scout.kb.store",
+        "ghia_scout.kb.retriever",
+        "ghia_scout.kb.updater",
+        "ghia_scout.report.generator",
+        "ghia_scout.report.poc_builder",
+        "ghia_scout.cli.main",
     ]
     for mod_name in modules:
         try:

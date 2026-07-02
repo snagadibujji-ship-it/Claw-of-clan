@@ -2,8 +2,8 @@
 
 import pytest
 
-from vulnclaw.agent.core import AgentCore
-from vulnclaw.agent.think_filter import format_think_tags, strip_think_tags
+from ghia_scout.agent.core import AgentCore
+from ghia_scout.agent.think_filter import format_think_tags, strip_think_tags
 
 
 class _FakeMessage:

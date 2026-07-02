@@ -42,7 +42,7 @@ jobs:
         run: npm ci
 
       - name: Ruff
-        run: ruff check vulnclaw tests
+        run: ruff check ghia_scout tests
 
       - name: Frontend typecheck
         working-directory: frontend

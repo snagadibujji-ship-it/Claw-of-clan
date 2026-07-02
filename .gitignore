@@ -32,8 +32,8 @@ env/
 Thumbs.db
 Desktop.ini
 
-# VulnClaw runtime
-.vulnclaw/
+# GHIA Scout runtime
+.ghia_scout/
 .workbuddy/
 .trae/
 sessions/

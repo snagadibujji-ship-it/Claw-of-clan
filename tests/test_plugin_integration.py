@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from vulnclaw.config.schema import SessionConfig, GHIAScoutConfig
-from vulnclaw.plugins import (
+from ghia_scout.config.schema import SessionConfig, GHIAScoutConfig
+from ghia_scout.plugins import (
     PluginContext,
     PluginResult,
     PluginRuntime,
@@ -56,8 +56,8 @@ def test_config_defaults_expose_plugin_runtime_and_budget_fields():
 
 
 def test_plugin_finding_converts_to_vuln_finding():
-    from vulnclaw.plugins.integration import plugin_finding_to_vuln_finding
-    from vulnclaw.plugins.result import PluginFinding, RiskLevel
+    from ghia_scout.plugins.integration import plugin_finding_to_vuln_finding
+    from ghia_scout.plugins.result import PluginFinding, RiskLevel
 
     pf = PluginFinding(
         title="Missing security headers",
@@ -78,9 +78,9 @@ def test_plugin_finding_converts_to_vuln_finding():
 
 
 def test_merge_plugin_results_dedups_into_session():
-    from vulnclaw.agent.context import SessionState
-    from vulnclaw.plugins.integration import merge_plugin_results_into_session
-    from vulnclaw.plugins.result import PluginFinding, PluginResult, RiskLevel
+    from ghia_scout.agent.context import SessionState
+    from ghia_scout.plugins.integration import merge_plugin_results_into_session
+    from ghia_scout.plugins.result import PluginFinding, PluginResult, RiskLevel
 
     finding = PluginFinding(title="Weak CSP", risk=RiskLevel.LOW, vuln_type="security_headers")
     result = PluginResult(plugin_id="builtin.web.headers", findings=[finding])

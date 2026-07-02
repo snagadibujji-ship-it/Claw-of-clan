@@ -1,4 +1,4 @@
-from vulnclaw.agent.reflexion import (
+from ghia_scout.agent.reflexion import (
     FailureCategory,
     ReflexionEngine,
     classify_failure,

@@ -9,7 +9,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from vulnclaw.agent import chatgpt_proxy as cp
+from ghia_scout.agent import chatgpt_proxy as cp
 
 # ── Pure translation functions ───────────────────────────────────────
 

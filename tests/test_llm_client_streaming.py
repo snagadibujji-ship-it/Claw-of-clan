@@ -13,7 +13,7 @@ class TestNullSink:
 
     def test_null_sink_on_status(self):
         """on_status should do nothing."""
-        from vulnclaw.agent.llm_client import _NullSink
+        from ghia_scout.agent.llm_client import _NullSink
 
         sink = _NullSink()
         # Should not raise
@@ -26,7 +26,7 @@ class TestNullSink:
 
     def test_null_sink_returns_none(self):
         """All methods should return None."""
-        from vulnclaw.agent.llm_client import _NullSink
+        from ghia_scout.agent.llm_client import _NullSink
 
         sink = _NullSink()
         assert sink.on_status("msg") is None
@@ -43,7 +43,7 @@ class TestCallLlmStream:
     @pytest.mark.asyncio
     async def test_stream_tokens_accumulated(self):
         """Test that stream tokens are accumulated correctly."""
-        from vulnclaw.agent.llm_client import call_llm_stream
+        from ghia_scout.agent.llm_client import call_llm_stream
 
         # Mock agent
         agent = MagicMock()
@@ -104,7 +104,7 @@ class TestCallLlmStream:
     @pytest.mark.asyncio
     async def test_stream_with_reasoning(self):
         """Test streaming with reasoning content."""
-        from vulnclaw.agent.llm_client import call_llm_stream
+        from ghia_scout.agent.llm_client import call_llm_stream
 
         agent = MagicMock()
         mock_client = MagicMock()
@@ -161,7 +161,7 @@ class TestTerminalStreamSink:
 
     def test_show_thinking_true(self):
         """Test thinking content is shown when show_thinking=True."""
-        from vulnclaw.agent.llm_client import _NullSink
+        from ghia_scout.agent.llm_client import _NullSink
 
         # This is tested implicitly - NullSink should do nothing
         sink = _NullSink()
@@ -170,7 +170,7 @@ class TestTerminalStreamSink:
 
     def test_show_thinking_false(self):
         """Test thinking content is hidden when show_thinking=False."""
-        from vulnclaw.agent.llm_client import _NullSink
+        from ghia_scout.agent.llm_client import _NullSink
 
         sink = _NullSink()
         # Should not raise even with content
@@ -208,7 +208,7 @@ class TestStreamOutputSequence:
     @pytest.mark.asyncio
     async def test_stream_calls_sink_in_order(self):
         """验证 sink 方法按正确顺序被调用"""
-        from vulnclaw.agent.llm_client import call_llm_stream
+        from ghia_scout.agent.llm_client import call_llm_stream
 
         # 创建 Spy Sink
         spy = SpySink()
@@ -278,7 +278,7 @@ class TestStreamOutputSequence:
     @pytest.mark.asyncio
     async def test_stream_with_reasoning_calls_thinking_then_content(self):
         """验证 reasoning 和 content 的调用顺序"""
-        from vulnclaw.agent.llm_client import call_llm_stream
+        from ghia_scout.agent.llm_client import call_llm_stream
 
         spy = SpySink()
 
@@ -343,7 +343,7 @@ class TestStreamOutputSequence:
     @pytest.mark.asyncio
     async def test_stream_accumulates_full_text(self):
         """验证返回的完整文本包含所有 token"""
-        from vulnclaw.agent.llm_client import call_llm_stream
+        from ghia_scout.agent.llm_client import call_llm_stream
 
         spy = SpySink()
 
@@ -411,7 +411,7 @@ class TestTerminalStreamSinkRealOutput:
 
         from rich.console import Console
 
-        from vulnclaw.cli.main import TerminalStreamSink
+        from ghia_scout.cli.main import TerminalStreamSink
 
         output = io.StringIO()
         console = Console(file=output, force_terminal=True)
@@ -429,7 +429,7 @@ class TestTerminalStreamSinkRealOutput:
 
         from rich.console import Console
 
-        from vulnclaw.cli.main import TerminalStreamSink
+        from ghia_scout.cli.main import TerminalStreamSink
 
         output = io.StringIO()
         console = Console(file=output, force_terminal=True)
@@ -450,7 +450,7 @@ class TestTerminalStreamSinkRealOutput:
 
         from rich.console import Console
 
-        from vulnclaw.cli.main import TerminalStreamSink
+        from ghia_scout.cli.main import TerminalStreamSink
 
         output = io.StringIO()
         console = Console(file=output, force_terminal=True)
@@ -468,7 +468,7 @@ class TestTerminalStreamSinkRealOutput:
 
         from rich.console import Console
 
-        from vulnclaw.cli.main import TerminalStreamSink
+        from ghia_scout.cli.main import TerminalStreamSink
 
         output = io.StringIO()
         console = Console(file=output, force_terminal=True)
@@ -489,7 +489,7 @@ class TestTerminalStreamSinkRealOutput:
 
         from rich.console import Console
 
-        from vulnclaw.cli.main import TerminalStreamSink
+        from ghia_scout.cli.main import TerminalStreamSink
 
         output = io.StringIO()
         console = Console(file=output, force_terminal=True)
@@ -508,7 +508,7 @@ class TestTerminalStreamSinkRealOutput:
 
         from rich.console import Console
 
-        from vulnclaw.cli.main import TerminalStreamSink
+        from ghia_scout.cli.main import TerminalStreamSink
 
         output = io.StringIO()
         console = Console(file=output, force_terminal=True)
@@ -527,7 +527,7 @@ class TestTerminalStreamSinkRealOutput:
 
         from rich.console import Console
 
-        from vulnclaw.cli.main import TerminalStreamSink
+        from ghia_scout.cli.main import TerminalStreamSink
 
         output = io.StringIO()
         console = Console(file=output, force_terminal=True)
@@ -548,7 +548,7 @@ class TestStreamFallback:
     @pytest.mark.asyncio
     async def test_stream_fallback_when_streaming_not_supported(self):
         """测试当 Provider 不支持流式时自动降级"""
-        from vulnclaw.agent.llm_client import call_llm_stream
+        from ghia_scout.agent.llm_client import call_llm_stream
 
         spy = SpySink()
 
@@ -588,7 +588,7 @@ class TestStreamFallback:
     @pytest.mark.asyncio
     async def test_stream_with_cancellation_returns_partial(self):
         """测试流式中断时返回已收集的部分文本"""
-        from vulnclaw.agent.llm_client import call_llm_stream
+        from ghia_scout.agent.llm_client import call_llm_stream
 
         spy = SpySink()
 
@@ -643,7 +643,7 @@ class TestCallLlmAutoStream:
     @pytest.mark.asyncio
     async def test_auto_stream_handles_tool_calls(self):
         """测试工具调用被正确处理"""
-        from vulnclaw.agent.llm_client import call_llm_auto_stream
+        from ghia_scout.agent.llm_client import call_llm_auto_stream
 
         spy = SpySink()
 
@@ -702,7 +702,7 @@ class TestCallLlmAutoStream:
         agent.context.add_assistant_message = MagicMock()
 
         # Patch handle_tool_calls_with_results
-        import vulnclaw.agent.llm_client as llm_client_module
+        import ghia_scout.agent.llm_client as llm_client_module
         original = llm_client_module.handle_tool_calls_with_results
         llm_client_module.handle_tool_calls_with_results = mock_handle_tool_calls_with_results
 
@@ -718,7 +718,7 @@ class TestCallLlmAutoStream:
     @pytest.mark.asyncio
     async def test_auto_stream_text_only_response(self):
         """测试纯文本响应（无工具调用）"""
-        from vulnclaw.agent.llm_client import call_llm_auto_stream
+        from ghia_scout.agent.llm_client import call_llm_auto_stream
 
         spy = SpySink()
 

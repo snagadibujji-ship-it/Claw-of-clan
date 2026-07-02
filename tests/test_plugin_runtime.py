@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from vulnclaw.agent.context import TaskConstraints
-from vulnclaw.plugins import (
+from ghia_scout.agent.context import TaskConstraints
+from ghia_scout.plugins import (
     PluginContext,
     PluginRegistry,
     PluginResult,

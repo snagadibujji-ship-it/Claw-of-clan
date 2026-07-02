@@ -140,7 +140,7 @@ GHIA Scout features a low-overhead, modular plugin runtime (`plugins/`) to perfo
 ### 6.1 Writing a Custom Plugin
 Plugins inherit from the `BasePlugin` class and implement search/assertion hooks:
 ```python
-from vulnclaw.plugins.base import BasePlugin, PluginContext, PluginReport
+from ghia_scout.plugins.base import BasePlugin, PluginContext, PluginReport
 
 class HeaderSecurityPlugin(BasePlugin):
     def name(self) -> str:
@@ -223,7 +223,7 @@ pip install -e ".[dev]"
 ### Code Style & Verification
 *   **Formatting/Linting**: Verify code compliance using Ruff:
     ```bash
-    ruff check vulnclaw tests
+    ruff check ghia_scout tests
     ```
 *   **Testing**: Execute the test runner:
     ```bash

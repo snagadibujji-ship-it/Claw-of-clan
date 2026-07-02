@@ -1,10 +1,10 @@
 from pathlib import Path
 from types import SimpleNamespace
 
-from vulnclaw.agent.context import SessionState
-from vulnclaw.agent.prompt_context import build_round_context
-from vulnclaw.agent.reasoning_state import PathStep
-from vulnclaw.agent.reflexion import FailureCategory, ReflexionEngine
+from ghia_scout.agent.context import SessionState
+from ghia_scout.agent.prompt_context import build_round_context
+from ghia_scout.agent.reasoning_state import PathStep
+from ghia_scout.agent.reflexion import FailureCategory, ReflexionEngine
 
 
 def _fake_agent(tmp_path: Path, state: SessionState, reflexion=None):

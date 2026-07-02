@@ -3,8 +3,8 @@ from __future__ import annotations
 import asyncio
 from types import SimpleNamespace
 
-from vulnclaw.agent import solver
-from vulnclaw.agent.blackboard import Blackboard, IntentStatus
+from ghia_scout.agent import solver
+from ghia_scout.agent.blackboard import Blackboard, IntentStatus
 
 
 def _fake_agent(tool_outputs: list[str] | None = None):

@@ -11,14 +11,14 @@ class TestMCPRegistry:
     """Test MCPRegistry."""
 
     def test_register_server(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         registry.register_server("fetch")
         assert registry.server_count == 1
 
     def test_register_multiple_servers(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         registry.register_server("fetch")
@@ -27,7 +27,7 @@ class TestMCPRegistry:
         assert registry.server_count == 3
 
     def test_register_tool(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         registry.register_server("fetch")
@@ -42,7 +42,7 @@ class TestMCPRegistry:
         assert registry.tool_count == 1
 
     def test_get_server_for_tool(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         registry.register_server("fetch")
@@ -57,7 +57,7 @@ class TestMCPRegistry:
         assert registry.get_server_for_tool("fetch") == "fetch"
 
     def test_get_tool_schemas(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         registry.register_server("fetch")
@@ -74,7 +74,7 @@ class TestMCPRegistry:
         assert schemas[0]["name"] == "fetch"
 
     def test_set_server_error(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         registry.register_server("burp")
@@ -84,7 +84,7 @@ class TestMCPRegistry:
         assert state.health_status == "degraded"
 
     def test_duplicate_server_register(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         registry.register_server("fetch")
@@ -93,7 +93,7 @@ class TestMCPRegistry:
         assert registry.server_count >= 1
 
     def test_tool_for_nonexistent_server(self):
-        from vulnclaw.mcp.registry import MCPRegistry
+        from ghia_scout.mcp.registry import MCPRegistry
 
         registry = MCPRegistry()
         result = registry.get_server_for_tool("nonexistent")
@@ -107,7 +107,7 @@ class TestMCPRouter:
     """Test MCPRouter."""
 
     def test_route_fetch(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         results = router.route("发请求访问这个接口")
@@ -115,7 +115,7 @@ class TestMCPRouter:
         assert any(r["server"] == "fetch" for r in results)
 
     def test_route_burp(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         results = router.route("帮我抓包看一下这个请求")
@@ -123,7 +123,7 @@ class TestMCPRouter:
         assert any(r["server"] == "burp" for r in results)
 
     def test_route_browser(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         results = router.route("打开网页看看")
@@ -131,7 +131,7 @@ class TestMCPRouter:
         assert any(r["server"] == "chrome-devtools" for r in results)
 
     def test_route_screenshot(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         results = router.route("截图")
@@ -139,7 +139,7 @@ class TestMCPRouter:
         assert any(r["tool"] == "screenshot" for r in results)
 
     def test_route_memory_save(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         results = router.route("记住这个发现")
@@ -147,28 +147,28 @@ class TestMCPRouter:
         assert any(r["server"] == "memory" for r in results)
 
     def test_route_no_match(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         results = router.route("今天天气怎么样")
         assert len(results) == 0
 
     def test_extract_url(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         assert router.extract_url("访问 https://example.com/path") == "https://example.com/path"
         assert router.extract_url("没有URL") is None
 
     def test_extract_ip(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         assert router.extract_ip("扫描 192.168.1.100") == "192.168.1.100"
         assert router.extract_ip("没有IP") is None
 
     def test_suggest_tools_for_phase(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         tools = router.suggest_tools_for_phase("信息收集")
@@ -176,14 +176,14 @@ class TestMCPRouter:
         assert any(t["server"] == "fetch" for t in tools)
 
     def test_suggest_tools_for_unknown_phase(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         tools = router.suggest_tools_for_phase("未知阶段")
         assert tools == []
 
     def test_route_confidence(self):
-        from vulnclaw.mcp.router import MCPRouter
+        from ghia_scout.mcp.router import MCPRouter
 
         router = MCPRouter()
         results = router.route("发请求")
@@ -199,15 +199,15 @@ class TestMCPLifecycleManager:
     """Test MCPLifecycleManager."""
 
     def test_init(self):
-        from vulnclaw.config.schema import GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         assert manager.registry is not None
 
     def test_start_enabled_servers(self):
-        from vulnclaw.config.schema import GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         config = GHIAScoutConfig()
         manager = MCPLifecycleManager(config)
@@ -216,8 +216,8 @@ class TestMCPLifecycleManager:
         assert started >= 0  # May or may not actually start depending on env
 
     def test_get_tool_schemas(self):
-        from vulnclaw.config.schema import GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         config = GHIAScoutConfig()
         manager = MCPLifecycleManager(config)
@@ -229,8 +229,8 @@ class TestMCPLifecycleManager:
         """Calling an unknown tool should not crash."""
         import asyncio
 
-        from vulnclaw.config.schema import GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         config = GHIAScoutConfig()
         manager = MCPLifecycleManager(config)
@@ -243,8 +243,8 @@ class TestMCPLifecycleManager:
             pass  # Expected to fail for unknown tool
 
     def test_fetch_falls_back_to_local_mode_when_sdk_attach_fails(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("fetch")
@@ -257,8 +257,8 @@ class TestMCPLifecycleManager:
         assert state.attach_succeeded is True
 
     def test_fetch_starts_in_local_mode(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("fetch")
@@ -269,8 +269,8 @@ class TestMCPLifecycleManager:
         assert state.execution_mode == "local"
 
     def test_memory_falls_back_to_local_mode_when_sdk_attach_fails(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("memory")
@@ -282,8 +282,8 @@ class TestMCPLifecycleManager:
         assert state.execution_mode == "local"
 
     def test_memory_starts_in_local_mode(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("memory")
@@ -295,7 +295,7 @@ class TestMCPLifecycleManager:
         assert state.attach_succeeded is True
 
     def test_mcp_diagnostics_reports_execution_modes(self):
-        from vulnclaw.web.services.mcp_service import get_mcp_diagnostics
+        from ghia_scout.web.services.mcp_service import get_mcp_diagnostics
 
         view = get_mcp_diagnostics()
         assert view.total_services >= 2
@@ -306,8 +306,8 @@ class TestMCPLifecycleManager:
         assert any(item.execution_mode in {"placeholder", "local"} for item in view.services)
 
     def test_render_mcp_call_result_parses_text_content(self):
-        from vulnclaw.config.schema import GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         class TextItem:
             type = "text"
@@ -325,8 +325,8 @@ class TestMCPLifecycleManager:
         assert is_error is False
 
     def test_render_mcp_call_result_parses_error_content(self):
-        from vulnclaw.config.schema import GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         class TextItem:
             type = "text"
@@ -344,8 +344,8 @@ class TestMCPLifecycleManager:
         assert is_error is True
 
     def test_stdio_placeholder_records_attach_attempt_and_error(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("chrome-devtools")
@@ -358,8 +358,8 @@ class TestMCPLifecycleManager:
         assert state.last_error_type in {"sdk_unavailable", "config_error", "attach_failed", None}
 
     def test_attach_success_registers_runtime_tools(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("chrome-devtools")
@@ -386,9 +386,9 @@ class TestMCPLifecycleManager:
         assert "navigate" not in tools
 
     def test_burp_attach_success_registers_runtime_tools(self):
-        import vulnclaw.mcp.lifecycle as lifecycle_mod
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        import ghia_scout.mcp.lifecycle as lifecycle_mod
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("burp")
@@ -424,8 +424,8 @@ class TestMCPLifecycleManager:
             lifecycle_mod.sse_client = old_sse
 
     def test_sse_placeholder_records_invalid_url_error(self):
-        from vulnclaw.config.schema import MCPServerConfig, MCPTransportConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import MCPServerConfig, MCPTransportConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("jadx")
@@ -444,8 +444,8 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_call_tool_returns_structured_result_for_local_tool(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("memory")
@@ -463,9 +463,9 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_fetch_constraint_violation_returns_structured_error(self):
-        from vulnclaw.agent.context import TaskConstraints
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.agent.context import TaskConstraints
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("fetch")
@@ -481,9 +481,9 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_fetch_host_constraint_violation_returns_structured_error(self):
-        from vulnclaw.agent.context import TaskConstraints
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.agent.context import TaskConstraints
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("fetch")
@@ -499,9 +499,9 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_fetch_path_constraint_violation_returns_structured_error(self):
-        from vulnclaw.agent.context import TaskConstraints
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.agent.context import TaskConstraints
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("fetch")
@@ -517,8 +517,8 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_call_tool_returns_structured_result_for_placeholder_tool(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         manager = MCPLifecycleManager(GHIAScoutConfig())
         manager.registry.register_server("chrome-devtools")
@@ -538,8 +538,8 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_call_tool_returns_success_for_chrome_when_stdio_call_succeeds(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         class DummySession:
             async def call_tool(self, tool_name, arguments=None):
@@ -576,8 +576,8 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_chrome_devtools_reuses_persistent_session(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         class DummySession:
             def __init__(self):
@@ -614,8 +614,8 @@ class TestMCPLifecycleManager:
 
     @pytest.mark.asyncio
     async def test_call_tool_returns_success_for_burp_when_stdio_call_succeeds(self):
-        from vulnclaw.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
-        from vulnclaw.mcp.lifecycle import MCPLifecycleManager
+        from ghia_scout.config.schema import BUILTIN_MCP_SERVERS, MCPServerConfig, GHIAScoutConfig
+        from ghia_scout.mcp.lifecycle import MCPLifecycleManager
 
         class DummySession:
             async def call_tool(self, tool_name, arguments=None):
@@ -652,7 +652,7 @@ class TestMCPLifecycleManager:
 class TestStructuredToolResults:
     @pytest.mark.asyncio
     async def test_tool_call_manager_preserves_structured_content(self):
-        from vulnclaw.agent.tool_call_manager import handle_tool_calls_with_results
+        from ghia_scout.agent.tool_call_manager import handle_tool_calls_with_results
 
         class DummyMcpManager:
             async def call_tool(self, tool_name, args):

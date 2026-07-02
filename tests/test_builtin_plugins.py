@@ -3,8 +3,8 @@ from __future__ import annotations
 import base64
 import json
 
-from vulnclaw.plugins import PluginContext, PluginStage, RiskLevel
-from vulnclaw.plugins.web import (
+from ghia_scout.plugins import PluginContext, PluginStage, RiskLevel
+from ghia_scout.plugins.web import (
     BUILTIN_WEB_PLUGINS,
     JavaScriptEndpointsPlugin,
     JWTClaimsPlugin,

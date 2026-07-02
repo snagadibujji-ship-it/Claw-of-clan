@@ -64,7 +64,7 @@ Repository = "https://github.com/snagadibujji-ship-it/Claw-of-clan"
 Issues = "https://github.com/snagadibujji-ship-it/Claw-of-clan/issues"
 
 [project.scripts]
-ghia-scout = "vulnclaw.cli.main:app"
+ghia-scout = "ghia_scout.cli.main:app"
 
 [tool.hatch.build]
 exclude = [
@@ -79,11 +79,11 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["vulnclaw"]
+packages = ["ghia_scout"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/vulnclaw",
+    "/ghia_scout",
     "/frontend",
     "/tests",
     "/scripts",
