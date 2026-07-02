@@ -43,7 +43,7 @@ WORKDIR /app
 
 # Install Python deps first (better caching): copy only project metadata
 COPY pyproject.toml README.md LICENSE ./
-COPY ghia-scout ./ghia-scout
+COPY ghia_scout ./ghia_scout
 
 # Editable install so ghia-scout resolves to /app and finds frontend/dist.
 # `web` extra pulls in fastapi + uvicorn for the Web UI.
