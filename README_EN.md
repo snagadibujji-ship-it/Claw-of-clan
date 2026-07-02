@@ -656,19 +656,7 @@ Unauthorized penetration testing is illegal. The author assumes no liability for
 
 [MIT License](LICENSE)
 
----
 
-## Join the Community
-
-Connect with security enthusiasts to share, learn, and grow together.
-
-| Community Group | Developer Group |
-|:--:|:--:|
-| Join discussions and get the latest product updates and usage tips | Join us for open-source contributions and deep technical discussions |
-| ![GHIA Scout Community Group](assets/GHIA_Scout_Community_Group.jpg) | ![GHIA Scout Developer Group](assets/GHIA_Scout_Developer_Group.png) |
-| **QQ Group: 954402631** | **QQ Group: 1065858551** |
-
----
 
 <div align="center">
 
