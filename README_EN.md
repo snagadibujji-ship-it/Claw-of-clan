@@ -627,12 +627,12 @@ ghia-scout config set session.show_thinking false  # hide thinking process (also
 | ----------------------------------------------- | ---------------------- |
 | `GHIA_SCOUT_LLM_PROVIDER`                       | LLM provider name      |
 | `GHIA_SCOUT_LLM_API_KEY`                        | API key                |
-| `VULNCLAW_LLM_AUTH_MODE`                      | static / oauth         |
-| `VULNCLAW_LLM_CHATGPT_AUTO_PROXY`             | Built-in ChatGPT proxy |
+| `GHIA_SCOUT_LLM_AUTH_MODE`                      | static / oauth         |
+| `GHIA_SCOUT_LLM_CHATGPT_AUTO_PROXY`             | Built-in ChatGPT proxy |
 | `GHIA_SCOUT_LLM_BASE_URL`                       | API base URL           |
 | `GHIA_SCOUT_LLM_MODEL`                          | Model name             |
-| `VULNCLAW_SESSION__MAX_ROUNDS`                | Max autonomous rounds  |
-| `VULNCLAW_SESSION__STALE_ROUNDS_THRESHOLD`    | Dead-loop threshold    |
+| `GHIA_SCOUT_SESSION_MAX_ROUNDS`                 | Max autonomous rounds  |
+| `GHIA_SCOUT_SESSION_STALE_ROUNDS_THRESHOLD`     | Dead-loop threshold    |
 
 Priority: **Environment Variables > Config File > Built-in Defaults**
 
@@ -665,7 +665,7 @@ Connect with security enthusiasts to share, learn, and grow together.
 | Community Group | Developer Group |
 |:--:|:--:|
 | Join discussions and get the latest product updates and usage tips | Join us for open-source contributions and deep technical discussions |
-| ![GHIA Scout Community Group](assets/社区交流群.jpg) | ![GHIA Scout Developer Group](assets/GHIA Scout开发者群聊.png) |
+| ![GHIA Scout Community Group](assets/GHIA_Scout_Community_Group.jpg) | ![GHIA Scout Developer Group](assets/GHIA_Scout_Developer_Group.png) |
 | **QQ Group: 954402631** | **QQ Group: 1065858551** |
 
 ---
